@@ -37,3 +37,7 @@ or
 
         MemcachedClient memcacheClient = cache.unwrap(MemcachedClient.class);
 
+### Todo
+
+* Implement all JSR 107 features
+* Concurrency
