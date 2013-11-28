@@ -29,6 +29,10 @@ You can set the seperator in the url, such as memcached://localhost:11211?sepera
 ##### add multi memcached hosts
 Please add peer param in the url, such as memcached://localhost:11211?peer=localhost:11212;localhost:11213  Hosts splitted by ";".
 
+#### Convert Cache to Map
+
+      Map<String, Object> store = cache.unwrap(Map.class);
+
 #### How to get MemcachedClient object to execute some commands?
 Two way:
 
