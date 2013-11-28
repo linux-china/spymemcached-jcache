@@ -31,7 +31,6 @@ public class RICacheMXBean<K, V> implements CacheMXBean {
 
     private final Cache<K, V> cache;
 
-
     /**
      * Constructor
      *
@@ -39,6 +38,10 @@ public class RICacheMXBean<K, V> implements CacheMXBean {
      */
     public RICacheMXBean(Cache<K, V> cache) {
         this.cache = cache;
+    }
+
+    public String getName() {
+        return cache.getName();
     }
 
     public String getKeyType() {
