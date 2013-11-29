@@ -153,20 +153,9 @@ public class SpyCache<K, V> implements Cache<K, V> {
                         keysToLoad.add(key);
                     }
                 }
-                Map<? extends K, ? extends V> loaded;
-                try {
-                    loaded = cacheLoader.loadAll(keysToLoad);
-                } catch (Exception e) {
-                    if (!(e instanceof CacheLoaderException)) {
-                        throw new CacheLoaderException("Exception in CacheLoader", e);
-                    } else {
-                        throw e;
-                    }
-                }
-                for (K key : keysToLoad) {
-                    if (loaded.get(key) == null) {
-                        loaded.remove(key);
-                    }
+                Map<? extends K, ? extends V> loaded = cacheLoader.loadAll(keysToLoad);
+                for (Map.Entry<? extends K, ? extends V> entry : loaded.entrySet()) {
+                    put(entry.getKey(), entry.getValue());
                 }
                 if (completionListener != null) {
                     completionListener.onCompletion();
