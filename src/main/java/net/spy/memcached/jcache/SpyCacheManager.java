@@ -49,7 +49,6 @@ public class SpyCacheManager implements CacheManager {
         }
         mClient = new MemcachedClient(servers);
         this.classLoaderReference = new WeakReference<ClassLoader>(classLoader);
-        this.isClosed = false;
     }
 
     public CachingProvider getCachingProvider() {
@@ -65,45 +64,30 @@ public class SpyCacheManager implements CacheManager {
     }
 
     public <K, V> Cache<K, V> createCache(String cacheName, Configuration<K, V> configuration) throws IllegalArgumentException {
-        if (isClosed()) {
-            throw new IllegalStateException();
+        if (!validateCacheName(cacheName)) {
+            throw new IllegalArgumentException("Cache name:" + cacheName + " is illegal, please use \\w+ as cache name.");
         }
-        synchronized (caches) {
-            if (!validateCacheName(cacheName)) {
-                throw new IllegalArgumentException("Cache name:" + cacheName + " is illegal, please use \\w+ as cache name.");
-            }
-            SpyCache cache = caches.get(cacheName);
-            if (cache == null) {
-                cache = new SpyCache(this, this.mClient, cacheName, namespaceSeperator, configuration);
-                caches.put(cacheName, cache);
-            }
-            return cache;
+        SpyCache cache = caches.get(cacheName);
+        if (cache == null) {
+            cache = new SpyCache(this, this.mClient, cacheName, namespaceSeperator, configuration);
+            caches.put(cacheName, cache);
         }
-
+        return cache;
     }
 
     public <K, V> Cache<K, V> getCache(String cacheName, Class<K> keyType, Class<V> valueType) {
-        if (this.caches.containsKey(cacheName)) {
-            SpyCache<?, ?> cache = caches.get(cacheName);
-            Configuration<?, ?> configuration = cache.getConfiguration();
-            if (configuration.getKeyType() != null && configuration.getKeyType().equals(keyType)) {
-                if (configuration.getValueType() != null && configuration.getValueType().equals(valueType)) {
-                    return (Cache<K, V>) cache;
-                } else {
-                    throw new ClassCastException("Incompatible cache value types specified, expected " + configuration.getValueType() + " but " + valueType + " was specified");
-                }
-            } else {
-                throw new ClassCastException("Incompatible cache key types specified, expected " + configuration.getKeyType() + " but " + keyType + " was specified");
-            }
+        if (caches.containsKey(cacheName)) {
+            return (Cache<K, V>) caches.get(cacheName);
         }
         MutableConfiguration<K, V> configuration = new MutableConfiguration<K, V>();
-        configuration.setTypes(keyType, valueType);
+        if (keyType != null && valueType != null) {
+            configuration.setTypes(keyType, valueType);
+        }
         return createCache(cacheName, configuration);
     }
 
     public <K, V> Cache<K, V> getCache(String cacheName) {
-        MutableConfiguration<K, V> configuration = new MutableConfiguration<K, V>();
-        return createCache(cacheName, configuration);
+        return getCache(cacheName, null, null);
     }
 
     public Iterable<String> getCacheNames() {
