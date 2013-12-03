@@ -1,7 +1,10 @@
 package net.spy.memcached.jcache;
 
+import net.spy.memcached.MemcachedClient;
+
 import javax.cache.Cache;
 import javax.cache.processor.MutableEntry;
+import java.util.Map;
 
 /**
  * A cache entry implementation.
@@ -75,8 +78,8 @@ public class RIEntry<K, V> implements MutableEntry<K, V> {
      */
     @Override
     public <T> T unwrap(Class<T> clazz) {
-        if (clazz != null && clazz.isInstance(this)) {
-            return (T) this;
+        if (clazz.isAssignableFrom(this.getClass())) {
+            return clazz.cast(this);
         } else {
             throw new IllegalArgumentException("Class " + clazz + " is unknown to this implementation");
         }
