@@ -5,6 +5,7 @@ import net.spy.memcached.jcache.spi.SpyCachingProvider;
 
 import javax.cache.Cache;
 import javax.cache.CacheManager;
+import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.Configuration;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.spi.CachingProvider;
@@ -64,7 +65,11 @@ public class SpyCacheManager implements CacheManager {
         return this.properties;
     }
 
-    public <K, V> Cache<K, V> createCache(String cacheName, Configuration<K, V> configuration) throws IllegalArgumentException {
+    public ClassLoader getClassLoader() {
+        return this.getClass().getClassLoader();
+    }
+
+    public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String cacheName, C configuration) throws IllegalArgumentException {
         if (isClosed()) {
             throw new IllegalStateException();
         }
@@ -73,7 +78,7 @@ public class SpyCacheManager implements CacheManager {
         }
         SpyCache cache = caches.get(cacheName);
         if (cache == null) {
-            cache = new SpyCache(this, this.mClient, cacheName, namespaceSeperator, configuration);
+            cache = new SpyCache(this, this.mClient, cacheName, namespaceSeperator, (CompleteConfiguration) configuration);
             caches.put(cacheName, cache);
         }
         return cache;
@@ -82,7 +87,7 @@ public class SpyCacheManager implements CacheManager {
     public <K, V> Cache<K, V> getCache(String cacheName, Class<K> keyType, Class<V> valueType) {
         if (this.caches.containsKey(cacheName)) {
             SpyCache<?, ?> cache = caches.get(cacheName);
-            Configuration<?, ?> configuration = cache.getConfiguration();
+            Configuration<?, ?> configuration = cache.getConfiguration(Configuration.class);
             if (configuration.getKeyType() != null && configuration.getKeyType().equals(keyType)) {
                 if (configuration.getValueType() != null && configuration.getValueType().equals(valueType)) {
                     return (Cache<K, V>) cache;
