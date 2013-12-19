@@ -33,7 +33,7 @@ public class SpyCacheManager implements CacheManager {
     public SpyCacheManager(CachingProvider cachingProvider, URI uri, ClassLoader classLoader, Properties properties) throws Exception {
         this.cachingProvider = cachingProvider;
         this.uri = uri;
-        this.properties = properties;
+        this.properties = properties == null ? new Properties() : new Properties(properties);
         List<InetSocketAddress> servers = new ArrayList<InetSocketAddress>();
         servers.add(new InetSocketAddress(uri.getHost(), uri.getPort()));
         Map<String, String> params = parseQuery(uri.getQuery());
