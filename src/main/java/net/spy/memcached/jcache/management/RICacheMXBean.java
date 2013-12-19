@@ -17,6 +17,8 @@
 package net.spy.memcached.jcache.management;
 
 import javax.cache.Cache;
+import javax.cache.configuration.CompleteConfiguration;
+import javax.cache.configuration.Configuration;
 import javax.cache.management.CacheMXBean;
 
 /**
@@ -45,11 +47,11 @@ public class RICacheMXBean<K, V> implements CacheMXBean {
     }
 
     public String getKeyType() {
-        return cache.getConfiguration().getKeyType().getName();
+        return cache.getConfiguration(Configuration.class).getKeyType().getName();
     }
 
     public String getValueType() {
-        return cache.getConfiguration().getValueType().getName();
+        return cache.getConfiguration(Configuration.class).getValueType().getName();
     }
 
     /**
@@ -57,7 +59,7 @@ public class RICacheMXBean<K, V> implements CacheMXBean {
      */
     @Override
     public boolean isReadThrough() {
-        return cache.getConfiguration().isReadThrough();
+        return cache.getConfiguration(CompleteConfiguration.class).isReadThrough();
     }
 
     /**
@@ -65,7 +67,7 @@ public class RICacheMXBean<K, V> implements CacheMXBean {
      */
     @Override
     public boolean isWriteThrough() {
-        return cache.getConfiguration().isWriteThrough();
+        return cache.getConfiguration(CompleteConfiguration.class).isWriteThrough();
     }
 
     /**
@@ -73,7 +75,7 @@ public class RICacheMXBean<K, V> implements CacheMXBean {
      */
     @Override
     public boolean isStoreByValue() {
-        return cache.getConfiguration().isStoreByValue();
+        return cache.getConfiguration(CompleteConfiguration.class).isStoreByValue();
     }
 
     /**
@@ -81,7 +83,7 @@ public class RICacheMXBean<K, V> implements CacheMXBean {
      */
     @Override
     public boolean isStatisticsEnabled() {
-        return cache.getConfiguration().isStatisticsEnabled();
+        return cache.getConfiguration(CompleteConfiguration.class).isStatisticsEnabled();
     }
 
     /**
@@ -89,6 +91,6 @@ public class RICacheMXBean<K, V> implements CacheMXBean {
      */
     @Override
     public boolean isManagementEnabled() {
-        return cache.getConfiguration().isManagementEnabled();
+        return cache.getConfiguration(CompleteConfiguration.class).isManagementEnabled();
     }
 }
