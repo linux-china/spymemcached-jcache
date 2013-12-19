@@ -12,6 +12,7 @@ import net.spy.memcached.jcache.management.RICacheStatisticsMXBean;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.CacheEntryListenerConfiguration;
+import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.Configuration;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.event.CacheEntryRemovedListener;
@@ -22,6 +23,7 @@ import javax.cache.expiry.ExpiryPolicy;
 import javax.cache.integration.*;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
+import javax.cache.processor.EntryProcessorResult;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -49,7 +51,7 @@ public class SpyCache<K, V> implements Cache<K, V> {
     private final RICacheStatisticsMXBean statistics;
     private boolean isClosed;
 
-    public SpyCache(CacheManager cacheManager, MemcachedClient mClient, String cacheName, String seperator, Configuration<K, V> configuration) {
+    public SpyCache(CacheManager cacheManager, MemcachedClient mClient, String cacheName, String seperator, CompleteConfiguration<K, V> configuration) {
         this.cacheManager = cacheManager;
         this.mClient = mClient;
         this.cacheName = cacheName;
@@ -313,8 +315,11 @@ public class SpyCache<K, V> implements Cache<K, V> {
         throw new UnsupportedOperationException("clear not supported by Memcached");
     }
 
-    public Configuration<K, V> getConfiguration() {
-        return this.configuration;
+    public <C extends Configuration<K, V>> C getConfiguration(Class<C> clazz) {
+        if (clazz.isAssignableFrom(this.getClass())) {
+            return (C) this.configuration;
+        }
+        return null;
     }
 
     public <T> T invoke(K key, EntryProcessor<K, V, T> entryProcessor, Object... arguments) throws EntryProcessorException {
@@ -323,10 +328,18 @@ public class SpyCache<K, V> implements Cache<K, V> {
         return entryProcessor.process(entry, arguments);
     }
 
-    public <T> Map<K, T> invokeAll(Set<? extends K> keys, EntryProcessor<K, V, T> entryProcessor, Object... arguments) {
-        Map<K, T> map = new HashMap<K, T>();
+    public <T> Map<K, EntryProcessorResult<T>> invokeAll(Set<? extends K> keys, EntryProcessor<K, V, T> entryProcessor, Object... arguments) {
+        Map<K, EntryProcessorResult<T>> map = new HashMap<K, EntryProcessorResult<T>>();
         for (K key : keys) {
-            map.put(key, invoke(key, entryProcessor, arguments));
+            final T result = invoke(key, entryProcessor, arguments);
+            if (result != null) {
+                map.put(key, new EntryProcessorResult<T>() {
+                    @Override
+                    public T get() throws EntryProcessorException {
+                        return result;
+                    }
+                });
+            }
         }
         return map;
     }
@@ -408,7 +421,7 @@ public class SpyCache<K, V> implements Cache<K, V> {
         for (RICacheEntryListenerRegistration<K, V> listenerRegistration : listenerRegistrations) {
             if (cacheEntryListenerConfiguration.equals(listenerRegistration.getConfiguration())) {
                 listenerRegistrations.remove(listenerRegistration);
-                configuration.getCacheEntryListenerConfigurations().remove(cacheEntryListenerConfiguration);
+                configuration.removeCacheEntryListenerConfiguration(cacheEntryListenerConfiguration);
             }
         }
     }
