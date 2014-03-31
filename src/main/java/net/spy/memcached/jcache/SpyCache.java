@@ -102,7 +102,7 @@ public class SpyCache<K, V> implements Cache<K, V> {
             }
         }
         //load value from cache loader
-        if (configuration.isReadThrough() && configuration.getCacheLoader() != null) {
+        if (configuration.isReadThroughSupport()) {
             value = configuration.getCacheLoader().load(key);
             if (value != null) {
                 put(key, value);
@@ -168,7 +168,7 @@ public class SpyCache<K, V> implements Cache<K, V> {
             statistics.increaseCachePuts(1);
         }
         //write through
-        if (configuration.isWriteThrough() && configuration.getCacheWriter() != null) {
+        if (configuration.isWriteThroughSupport()) {
             configuration.getCacheWriter().write(new RIEntry<K, V>(this, key, value));
         }
         //fire updated event
