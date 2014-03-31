@@ -32,8 +32,16 @@ public class SpyMutableConfiguration<K, V> extends MutableConfiguration<K, V> {
         return cacheLoader;
     }
 
+    public boolean isReadThroughSupport() {
+        return this.isReadThrough && cacheLoader != null;
+    }
+
     public CacheWriter<? super K, ? super V> getCacheWriter() {
         return cacheWriter;
+    }
+
+    public boolean isWriteThroughSupport() {
+        return this.isWriteThrough && cacheWriter != null;
     }
 
     public ExpiryPolicy getExpiryPolicy() {
