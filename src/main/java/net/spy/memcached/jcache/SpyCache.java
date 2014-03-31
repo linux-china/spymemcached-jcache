@@ -42,10 +42,7 @@ public class SpyCache<K, V> implements Cache<K, V> {
     private MemcachedClient mClient;
     private String cacheName;
     private String seperator;
-    private MutableConfiguration<K, V> configuration;
-    private ExpiryPolicy expiryPolicy;
-    private CacheLoader<K, V> cacheLoader;
-    private CacheWriter<K, V> cacheWriter;
+    private SpyMutableConfiguration<K, V> configuration;
     private final CopyOnWriteArrayList<RICacheEntryListenerRegistration<K, V>> listenerRegistrations;
     private final RICacheMXBean cacheMXBean;
     private final RICacheStatisticsMXBean statistics;
@@ -56,14 +53,7 @@ public class SpyCache<K, V> implements Cache<K, V> {
         this.mClient = mClient;
         this.cacheName = cacheName;
         this.seperator = seperator;
-        this.configuration = new MutableConfiguration<K, V>(configuration);
-        this.expiryPolicy = this.configuration.getExpiryPolicyFactory().create();
-        if (this.configuration.getCacheLoaderFactory() != null) {
-            cacheLoader = this.configuration.getCacheLoaderFactory().create();
-        }
-        if (this.configuration.getCacheWriterFactory() != null) {
-            cacheWriter = (CacheWriter<K, V>) this.configuration.getCacheWriterFactory().create();
-        }
+        this.configuration = new SpyMutableConfiguration<K, V>(configuration);
         this.cacheMXBean = new RICacheMXBean(this);
         this.statistics = new RICacheStatisticsMXBean(this);
         this.listenerRegistrations = new CopyOnWriteArrayList<RICacheEntryListenerRegistration<K, V>>();
@@ -72,7 +62,6 @@ public class SpyCache<K, V> implements Cache<K, V> {
                 this.configuration.getCacheEntryListenerConfigurations()) {
             createAndAddListener(listenerConfiguration);
         }
-
     }
 
     public void setManagementEnabled(boolean enabled) {
@@ -113,8 +102,8 @@ public class SpyCache<K, V> implements Cache<K, V> {
             }
         }
         //load value from cache loader
-        if (configuration.isReadThrough() && cacheLoader != null) {
-            value = cacheLoader.load(key);
+        if (configuration.isReadThrough() && configuration.getCacheLoader() != null) {
+            value = configuration.getCacheLoader().load(key);
             if (value != null) {
                 put(key, value);
             }
@@ -138,7 +127,7 @@ public class SpyCache<K, V> implements Cache<K, V> {
     }
 
     public void loadAll(Set<? extends K> keys, boolean replaceExistingValues, CompletionListener completionListener) {
-        if (cacheLoader == null) {
+        if (configuration.getCacheLoader() == null) {
             if (completionListener != null) {
                 completionListener.onCompletion();
             }
@@ -155,7 +144,7 @@ public class SpyCache<K, V> implements Cache<K, V> {
                         keysToLoad.add(key);
                     }
                 }
-                Map<? extends K, ? extends V> loaded = cacheLoader.loadAll(keysToLoad);
+                Map<? extends K, ? extends V> loaded = configuration.getCacheLoader().loadAll(keysToLoad);
                 for (Map.Entry<? extends K, ? extends V> entry : loaded.entrySet()) {
                     put(entry.getKey(), entry.getValue());
                 }
@@ -179,8 +168,8 @@ public class SpyCache<K, V> implements Cache<K, V> {
             statistics.increaseCachePuts(1);
         }
         //write through
-        if (configuration.isWriteThrough() && cacheWriter != null) {
-            cacheWriter.write(new RIEntry<K, V>(this, key, value));
+        if (configuration.isWriteThrough() && configuration.getCacheWriter() != null) {
+            configuration.getCacheWriter().write(new RIEntry<K, V>(this, key, value));
         }
         //fire updated event
         if (!listenerRegistrations.isEmpty()) {
@@ -225,8 +214,8 @@ public class SpyCache<K, V> implements Cache<K, V> {
             statistics.increaseCacheRemovals(1);
         }
         //delete cache entry
-        if (cacheWriter != null && configuration.isWriteThrough()) {
-            cacheWriter.delete(key);
+        if (configuration.isWriteThrough() && this.configuration.getCacheWriter() != null) {
+            configuration.getCacheWriter().delete(key);
         }
         //raise "remove" event
         if (!listenerRegistrations.isEmpty()) {
@@ -270,8 +259,8 @@ public class SpyCache<K, V> implements Cache<K, V> {
         try {
             result = future.get();
             //write through
-            if (cacheWriter != null && configuration.isWriteThrough()) {
-                cacheWriter.write(new RIEntry<K, V>(this, key, value));
+            if (configuration.isWriteThrough() && configuration.getCacheWriter() != null) {
+                configuration.getCacheWriter().write(new RIEntry<K, V>(this, key, value));
             }
             //fire updated event
             if (!listenerRegistrations.isEmpty()) {
@@ -393,7 +382,7 @@ public class SpyCache<K, V> implements Cache<K, V> {
     }
 
     public int getExpiredTimeStamp() {
-        Duration expiryForCreation = expiryPolicy.getExpiryForCreation();
+        Duration expiryForCreation = configuration.getExpiryPolicy().getExpiryForCreation();
         if (expiryForCreation.isEternal()) {
             return 0;
         } else {
