@@ -26,6 +26,9 @@ First we should find the caching provider, then create cache manager from the pr
 ##### set custom seperator
 You can set the seperator in the url, such as memcached://localhost:11211?seperator=$$
 
+cache:memcached:localhost:11211?sperator=$$
+cache:memcached:localhost:11211,localhost:11212?sperator=$$
+
 ##### add multi memcached hosts
 Please add peer param in the url, such as memcached://localhost:11211?peer=localhost:11212;localhost:11213  Hosts splitted by ";".
 
