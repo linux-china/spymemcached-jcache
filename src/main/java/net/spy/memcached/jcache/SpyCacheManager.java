@@ -34,19 +34,29 @@ public class SpyCacheManager implements CacheManager {
         this.cachingProvider = cachingProvider;
         this.uri = uri;
         this.properties = properties == null ? new Properties() : new Properties(properties);
-        List<InetSocketAddress> servers = new ArrayList<InetSocketAddress>();
-        servers.add(new InetSocketAddress(uri.getHost(), uri.getPort()));
-        Map<String, String> params = parseQuery(uri.getQuery());
-        if (params.containsKey("peer")) {
-            String peer = params.get("peer");
-            String[] parts = peer.split(";");
-            for (String part : parts) {
-                String[] temp = part.split(":");
-                servers.add(new InetSocketAddress(temp[0], Integer.valueOf(temp[1])));
-            }
+        String schemeSpecificPart = uri.getSchemeSpecificPart();
+        String protocol = schemeSpecificPart.substring(0, schemeSpecificPart.indexOf(":"));
+        String hosts = schemeSpecificPart.replace(protocol + ":", "");
+        String queryString = null;
+        if (hosts.contains("?")) {
+            queryString = hosts.substring(hosts.indexOf("?") + 1);
+            hosts = hosts.substring(0, hosts.indexOf("?"));
         }
-        if (params.containsKey("seperator")) {
-            this.namespaceSeperator = params.get("seperator");
+        List<InetSocketAddress> servers = new ArrayList<InetSocketAddress>();
+        for (String address : hosts.split(",")) {
+            Integer port = 11211;
+            String host = address;
+            if (address.contains(":")) {
+                host = address.substring(0, address.indexOf(":"));
+                port = Integer.valueOf(address.substring(address.indexOf(":") + 1));
+            }
+            servers.add(new InetSocketAddress(host, port));
+        }
+        if (queryString != null && !queryString.isEmpty()) {
+            Map<String, String> params = parseQuery(queryString);
+            if (params.containsKey("seperator")) {
+                this.namespaceSeperator = params.get("seperator");
+            }
         }
         mClient = new MemcachedClient(servers);
         this.classLoaderReference = new WeakReference<ClassLoader>(classLoader);
