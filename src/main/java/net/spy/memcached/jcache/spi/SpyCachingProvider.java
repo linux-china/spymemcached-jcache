@@ -26,7 +26,7 @@ public class SpyCachingProvider implements CachingProvider {
 
     public SpyCachingProvider() {
         try {
-            this.defaultUri = new URI("memcached://localhost:11211");
+            this.defaultUri = new URI("cache:memcached:localhost:11211");
             this.defaultProperties = new Properties();
             this.cacheManagersByClassLoader = new WeakHashMap<ClassLoader, HashMap<URI, CacheManager>>();
         } catch (Exception e) {
