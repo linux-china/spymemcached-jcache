@@ -41,7 +41,7 @@ public class SpyCacheTest {
         daemon.setAddr(new InetSocketAddress("localhost", port));
         daemon.start();
         SpyCachingProvider provider = new SpyCachingProvider();
-        cacheManager = provider.getCacheManager(URI.create("memcached://localhost:11211"), null);
+        cacheManager = provider.getCacheManager(URI.create("cache:memcached:localhost:11211"), null);
     }
 
     @Test
