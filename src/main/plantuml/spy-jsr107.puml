@@ -1,0 +1,34 @@
+@startuml
+
+interface CacheProvider
+interface CacheManager
+interface Cache
+interface Entry
+interface MutableEntry
+interface Configuration
+class MutableConfiguration
+
+CacheProvider -right-> CacheManager
+CacheProvider --> Configuration
+Configuration --> CacheManager
+CacheManager --right-> Cache
+Cache --right-> Entry
+MutableEntry -up-|> Entry
+MutableConfiguration -up-|> Configuration
+
+
+SpyCachingProvider -up--|> CacheProvider
+SpyCacheManager -up--|>  CacheManager
+SpyCache -up-|> Cache
+SpyEntry ---up-|> MutableEntry
+SpyMutableConfiguration -up-|> MutableConfiguration
+
+SpyCachingProvider -right-> SpyCacheManager
+SpyCachingProvider --> SpyMutableConfiguration
+SpyMutableConfiguration --> SpyCacheManager
+SpyCacheManager -right-> SpyCache
+SpyCache -right-> SpyEntry
+SpyEntry -right-> SpyValue
+
+
+@enduml
