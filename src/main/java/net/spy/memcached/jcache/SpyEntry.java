@@ -1,10 +1,7 @@
 package net.spy.memcached.jcache;
 
-import net.spy.memcached.MemcachedClient;
-
 import javax.cache.Cache;
 import javax.cache.processor.MutableEntry;
-import java.util.Map;
 
 /**
  * A cache entry implementation.
@@ -14,7 +11,7 @@ import java.util.Map;
  * @author Brian Oliver
  * @author Greg Luck
  */
-public class RIEntry<K, V> implements MutableEntry<K, V> {
+public class SpyEntry<K, V> implements MutableEntry<K, V> {
     private final Cache<K, V> cache;
     private final K key;
     private final V value;
@@ -23,14 +20,14 @@ public class RIEntry<K, V> implements MutableEntry<K, V> {
     /**
      * Constructor
      */
-    public RIEntry(Cache<K, V> cache, K key, V value) {
+    public SpyEntry(Cache<K, V> cache, K key, V value) {
         this.cache = cache;
         this.key = key;
         this.value = value;
         this.oldValue = null;
     }
 
-    public RIEntry(Cache<K, V> cache, K key, V value, V oldValue) {
+    public SpyEntry(Cache<K, V> cache, K key, V value, V oldValue) {
         this.cache = cache;
         this.key = key;
         this.value = value;
@@ -92,7 +89,7 @@ public class RIEntry<K, V> implements MutableEntry<K, V> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || ((Object) this).getClass() != o.getClass()) return false;
-        RIEntry<?, ?> e2 = (RIEntry<?, ?>) o;
+        SpyEntry<?, ?> e2 = (SpyEntry<?, ?>) o;
         return this.getKey().equals(e2.getKey()) &&
                 this.getValue().equals(e2.getValue()) &&
                 (this.oldValue == null && e2.oldValue == null ||

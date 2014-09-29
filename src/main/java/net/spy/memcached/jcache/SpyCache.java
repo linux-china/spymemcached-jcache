@@ -14,12 +14,10 @@ import javax.cache.CacheManager;
 import javax.cache.configuration.CacheEntryListenerConfiguration;
 import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.Configuration;
-import javax.cache.configuration.MutableConfiguration;
 import javax.cache.event.CacheEntryRemovedListener;
 import javax.cache.event.CacheEntryUpdatedListener;
 import javax.cache.event.EventType;
 import javax.cache.expiry.Duration;
-import javax.cache.expiry.ExpiryPolicy;
 import javax.cache.integration.*;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
@@ -169,7 +167,7 @@ public class SpyCache<K, V> implements Cache<K, V> {
         }
         //write through
         if (configuration.isWriteThroughSupport()) {
-            configuration.getCacheWriter().write(new RIEntry<K, V>(this, key, value));
+            configuration.getCacheWriter().write(new SpyEntry<K, V>(this, key, value));
         }
         //fire updated event
         if (!listenerRegistrations.isEmpty()) {
@@ -260,7 +258,7 @@ public class SpyCache<K, V> implements Cache<K, V> {
             result = future.get();
             //write through
             if (configuration.isWriteThrough() && configuration.getCacheWriter() != null) {
-                configuration.getCacheWriter().write(new RIEntry<K, V>(this, key, value));
+                configuration.getCacheWriter().write(new SpyEntry<K, V>(this, key, value));
             }
             //fire updated event
             if (!listenerRegistrations.isEmpty()) {
@@ -313,7 +311,7 @@ public class SpyCache<K, V> implements Cache<K, V> {
 
     public <T> T invoke(K key, EntryProcessor<K, V, T> entryProcessor, Object... arguments) throws EntryProcessorException {
         V value = get(key);
-        RIEntry<K, V> entry = new RIEntry<K, V>(this, key, value);
+        SpyEntry<K, V> entry = new SpyEntry<K, V>(this, key, value);
         return entryProcessor.process(entry, arguments);
     }
 
