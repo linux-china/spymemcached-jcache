@@ -58,3 +58,15 @@ or
 * Entry
 * Key
 * Value
+
+As a cache provider, you should ext CacheProvider, CacheManager, Cache, CacheEntry and Cache value.
+
+
+### Question
+
+* transaction support for getAndRemove etc
+
+### Todo
+
+* event, event filter
+* management, statics
