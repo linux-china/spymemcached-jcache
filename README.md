@@ -48,6 +48,8 @@ or
 
 * Implement all JSR 107 features
 * Concurrency
+* event, event filter
+* management, statics
 
 
 ### Cache class diagram
@@ -62,11 +64,10 @@ or
 As a cache provider, you should ext CacheProvider, CacheManager, Cache, CacheEntry and Cache value.
 
 
+### JCache specification
+
+* compute: processor package, such as javax.cache.Cache.invoke and javax.cache.Cache.invokeAll
+
 ### Question
 
 * transaction support for getAndRemove etc
-
-### Todo
-
-* event, event filter
-* management, statics
