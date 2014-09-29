@@ -50,6 +50,7 @@ or
 * Concurrency
 * event, event filter
 * management, statics
+* 参考 git@github.com:ehcache/ehcache-jcache.git
 
 
 ### Cache class diagram
