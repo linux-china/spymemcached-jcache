@@ -48,3 +48,13 @@ or
 
 * Implement all JSR 107 features
 * Concurrency
+
+
+### Cache class diagram
+
+* Cache Provider
+* Cache Manager
+* Cache
+* Entry
+* Key
+* Value
